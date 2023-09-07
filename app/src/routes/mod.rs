@@ -15,6 +15,6 @@ pub fn start_routing(app: Router) -> Router {
             ws.on_upgrade(move |socket| handlers::ws_handler(socket, name, room))
         }))
 
-        .nest_service("/", ServeDir::new("../../public"))
+        .nest_service("/", ServeDir::new("src/public"))
 }
 
