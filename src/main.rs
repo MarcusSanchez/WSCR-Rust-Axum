@@ -10,12 +10,7 @@ use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 #[tokio::main]
 async fn main() {
-    let port = match env::var("PORT") {
-        Ok(val) => val,
-        Err(_) => "3000".to_string(),
-    };
-    let port = port.parse::<u16>().expect("Invalid Port Parsed");
-    let addr = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port);
+    let addr = get_addr().await;
 
     let mut app = Router::new();
     app = routes::start_routing(app);
@@ -27,3 +22,11 @@ async fn main() {
         .unwrap();
 }
 
+async fn get_addr() -> SocketAddr {
+    let port = match env::var("PORT") {
+        Ok(val) => val,
+        Err(_) => "3000".to_string(),
+    };
+    let port = port.parse::<u16>().expect("Invalid Port Parsed");
+    SocketAddr::new(IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)), port)
+}
