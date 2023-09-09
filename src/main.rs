@@ -10,7 +10,7 @@ use std::net::{IpAddr, Ipv4Addr, SocketAddr};
 
 #[tokio::main]
 async fn main() {
-    let addr = get_addr().await;
+    let addr = get_addr();
 
     let mut app = Router::new();
     app = routes::start_routing(app);
@@ -22,7 +22,7 @@ async fn main() {
         .unwrap();
 }
 
-async fn get_addr() -> SocketAddr {
+fn get_addr() -> SocketAddr {
     let port = match env::var("PORT") {
         Ok(val) => val,
         Err(_) => "3000".to_string(),

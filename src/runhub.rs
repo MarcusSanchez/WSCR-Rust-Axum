@@ -64,7 +64,7 @@ async fn register_client(client: Arc<Client>) {
             client: client.clone(),
             message: format!("{} has joined the room", client.name),
             is_announcement: true,
-            msg_type: "join",
+            msg_type: "join".into(),
         }
     ).await.unwrap();
     println!("connection registered:   {} in room {}", client.name, client.room_number);
@@ -87,7 +87,7 @@ async fn unregister_client(client: Arc<Client>) {
                 client: client.clone(),
                 message: format!("{} has left the room", client.name),
                 is_announcement: true,
-                msg_type: "leave",
+                msg_type: "leave".into(),
             }
         ).await.unwrap();
     }
@@ -124,12 +124,9 @@ async fn broadcast_message(message: Message) {
         // stringify json payload and send with ws
         let payload = serde_json::to_string(&payload).unwrap();
         let mut tx = client.connection.lock().await;
-        match tx.send(axum::extract::ws::Message::Text(payload)).await {
-            Ok(_) => {}
-            Err(_) => {
-                tx.send(axum::extract::ws::Message::Close(None)).await.unwrap();
-                Unregister::tx().send(client.clone()).await.unwrap();
-            }
+        if let Err(_) = tx.send(axum::extract::ws::Message::Text(payload)).await {
+            tx.send(axum::extract::ws::Message::Close(None)).await.unwrap();
+            Unregister::tx().send(client.clone()).await.unwrap();
         }
     }
 

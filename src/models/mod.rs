@@ -18,7 +18,7 @@ pub struct Message {
     pub client: Arc<Client>,
     pub message: String,
     pub is_announcement: bool,
-    pub msg_type: &'static str,
+    pub msg_type: String,
 }
 
 pub struct Room {

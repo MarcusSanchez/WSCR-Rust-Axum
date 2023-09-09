@@ -6,8 +6,6 @@ RUN apk add --no-cache musl-dev openssl-dev
 
 COPY . .
 
-# Build the application (dependencies will be cached if Cargo.toml and Cargo.lock haven't changed)
-
 RUN cargo build --release
 
 FROM alpine:3.14

@@ -9,9 +9,9 @@ type ClientSender = Sender<Arc<Client>>;
 type ClientReceiver = Receiver<Arc<Client>>;
 
 lazy_static! {
-    static ref REGISTER: Arc<(Arc<ClientSender>, Mutex<Option<ClientReceiver>>)> = {
+    static ref REGISTER: (Arc<ClientSender>, Mutex<Option<ClientReceiver>>) = {
         let (tx, rx) = channel(100);
-        Arc::new((Arc::new(tx), Mutex::new(Some(rx))))
+        (Arc::new(tx), Mutex::new(Some(rx)))
     };
 }
 
@@ -29,9 +29,9 @@ impl Register {
 
 
 lazy_static! {
-    static ref UNREGISTER: Arc<(Arc<ClientSender>, Mutex<Option<ClientReceiver>>)> = {
+    static ref UNREGISTER: (Arc<ClientSender>, Mutex<Option<ClientReceiver>>) = {
         let (tx, rx) = channel(100);
-        Arc::new((Arc::new(tx), Mutex::new(Some(rx))))
+        (Arc::new(tx), Mutex::new(Some(rx)))
     };
 }
 
@@ -49,9 +49,9 @@ impl Unregister {
 
 
 lazy_static! {
-    static ref BROADCAST: Arc<(Arc<Sender<Message>>, Mutex<Option<Receiver<Message>>>)> = {
+    static ref BROADCAST: (Arc<Sender<Message>>, Mutex<Option<Receiver<Message>>>) = {
         let (tx, rx) = channel(100);
-        Arc::new((Arc::new(tx), Mutex::new(Some(rx))))
+        (Arc::new(tx), Mutex::new(Some(rx)))
     };
 }
 

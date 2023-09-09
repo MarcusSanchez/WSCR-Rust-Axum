@@ -21,7 +21,7 @@ pub async fn ws_handler(socket: WebSocket, name: String, room: String) {
             client: client.clone(),
             message: msg,
             is_announcement: false,
-            msg_type: "",
+            msg_type: "".into(),
         }).await.unwrap();
     }
 
