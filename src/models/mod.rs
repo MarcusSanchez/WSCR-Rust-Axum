@@ -14,11 +14,10 @@ pub struct Client {
     pub unique_id: String, // for hasher
 }
 
-pub struct Message {
+pub struct BroadcastMessage {
     pub client: Arc<Client>,
     pub message: String,
-    pub is_announcement: bool,
-    pub msg_type: String,
+    pub msg_type: MessageType,
 }
 
 pub struct Room {
@@ -26,3 +25,26 @@ pub struct Room {
     pub count: usize,
     pub clients: HashSet<Arc<Client>>,
 }
+
+pub enum BroadcastType {
+    Announcement(BroadcastMessage),
+    Message(BroadcastMessage),
+}
+
+#[derive(Clone)]
+pub enum MessageType {
+    Join,
+    Leave,
+    Message,
+}
+
+impl MessageType {
+    pub fn to_string(&self) -> String {
+        match self {
+            MessageType::Join => "join".to_owned(),
+            MessageType::Leave => "leave".to_owned(),
+            MessageType::Message => "message".to_owned(),
+        }
+    }
+}
+

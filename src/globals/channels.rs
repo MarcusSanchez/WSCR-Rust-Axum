@@ -1,7 +1,7 @@
 use lazy_static::lazy_static;
 use tokio::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc};
-use crate::models::{Client, Message};
+use crate::models::{Client, BroadcastType};
 
 use tokio::sync::{Mutex};
 
@@ -15,7 +15,7 @@ lazy_static! {
     };
 }
 
-pub struct Register {}
+pub struct Register;
 
 impl Register {
     pub fn tx() -> Arc<ClientSender> {
@@ -35,7 +35,7 @@ lazy_static! {
     };
 }
 
-pub struct Unregister {}
+pub struct Unregister;
 
 impl Unregister {
     pub fn tx() -> Arc<ClientSender> {
@@ -49,20 +49,20 @@ impl Unregister {
 
 
 lazy_static! {
-    static ref BROADCAST: (Arc<Sender<Message>>, Mutex<Option<Receiver<Message>>>) = {
+    static ref BROADCAST: (Arc<Sender<BroadcastType>>, Mutex<Option<Receiver<BroadcastType>>>) = {
         let (tx, rx) = channel(100);
         (Arc::new(tx), Mutex::new(Some(rx)))
     };
 }
 
-pub struct Broadcast {}
+pub struct Broadcast;
 
 impl Broadcast {
-    pub fn tx() -> Arc<Sender<Message>> {
+    pub fn tx() -> Arc<Sender<BroadcastType>> {
         BROADCAST.0.clone()
     }
 
-    pub async fn rx_instance() -> Receiver<Message> {
+    pub async fn rx_instance() -> Receiver<BroadcastType> {
         BROADCAST.1.lock().await.take().unwrap()
     }
 }

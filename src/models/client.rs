@@ -26,8 +26,6 @@ impl Eq for Client {}
 
 impl PartialEq for Client {
     fn eq(&self, other: &Self) -> bool {
-        self.unique_id == other.unique_id &&
-            self.name == other.name &&
-            self.room_number == other.room_number
+        self.unique_id == other.unique_id
     }
 }

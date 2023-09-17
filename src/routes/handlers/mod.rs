@@ -1,12 +1,12 @@
 use std::sync::{Arc};
 use axum::extract::Path;
 use axum::extract::ws::WebSocket;
-use axum::Json;
 use serde::Serialize;
 use futures_util::{sink::SinkExt, stream::{StreamExt}};
+use serde_json::json;
 
 use crate::globals::{Broadcast, Register, ROOMS, Unregister};
-use crate::models::{Client, Message};
+use crate::models::{Client, BroadcastMessage, BroadcastType, MessageType};
 
 pub async fn ws_handler(socket: WebSocket, name: String, room: String) {
     let (tx, mut rx) = socket.split();
@@ -17,12 +17,15 @@ pub async fn ws_handler(socket: WebSocket, name: String, room: String) {
     while let Some(Ok(msg)) = rx.next().await {
         let msg = msg.into_text().unwrap();
         if msg == "" { continue; } // this is the close socket signal, don't broadcast to others
-        Broadcast::tx().send(Message {
-            client: client.clone(),
-            message: msg,
-            is_announcement: false,
-            msg_type: "".into(),
-        }).await.unwrap();
+        Broadcast::tx().send(
+            BroadcastType::Message(
+                BroadcastMessage {
+                    client: client.clone(),
+                    message: msg,
+                    msg_type: MessageType::Message,
+                }
+            )
+        ).await.unwrap();
     }
 
     Unregister::tx().send(client.clone()).await.unwrap();
@@ -60,24 +63,23 @@ pub struct RoomInfo {
     participants: Vec<String>,
 }
 
-pub async fn get_room_info(Path(room_number): Path<String>) -> Json<RoomInfo> {
+pub async fn get_room_info(Path(room_number): Path<String>) -> String {
     if let Some(room) = ROOMS.lock().await.get(&room_number) {
         let mut participants = vec![];
         for client in room.clients.iter() {
             participants.push(client.name.clone());
         }
-        return Json(RoomInfo {
-            error: "false",
-            error_message: None,
-            room_count: room.count as u16,
-            participants,
-        });
+        return json!({
+            "error": "false",
+            "roomCount": room.count,
+            "participants": participants,
+        }).to_string();
     }
 
-    return Json(RoomInfo {
-        error: "true",
-        error_message: Some("Room does not exist"),
-        room_count: 0,
-        participants: vec![],
-    });
+    json!({
+        "error": "true",
+        "errorMessage": "Room does not exist",
+        "roomCount": 0,
+        "participants": [],
+    }).to_string()
 }
