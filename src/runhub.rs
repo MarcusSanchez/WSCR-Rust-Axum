@@ -109,28 +109,26 @@ async fn broadcast_message(message: BroadcastType) {
 
     async fn create_message_worker(client: Arc<Client>, message: Arc<BroadcastType>) {
         let message = message.as_ref();
-        let payload = if let Announcement(announcement) = message {
-            json!({
+        let payload = match message {
+            Announcement(announcement) => json!({
                 "type": "announcement",
                 "data": {
                     "message": announcement.message,
                     "name": announcement.client.name,
                     "type": announcement.msg_type.to_string(),
                 }
-            })
-        } else if let Message(message) = message {
-            json!({
+            }),
+            Message(message) => json!({
                 "type": "message",
                 "data": {
                     "name": message.client.name,
                     "message": message.message,
                 }
             })
-        } else { unreachable!("") };
+        };
 
-        let payload = payload.to_string();
         let mut tx = client.connection.lock().await;
-        if let Err(_) = tx.send(axum::extract::ws::Message::Text(payload)).await {
+        if let Err(_) = tx.send(axum::extract::ws::Message::Text(payload.to_string())).await {
             tx.send(Close(None)).await.unwrap();
             Unregister::tx().send(client.clone()).await.unwrap();
         }
